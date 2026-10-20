@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 30" preserveAspectRatio="none">
+  <style>
+    path { stroke-dasharray: 400; animation: draw 1.2s 0.6s ease-out both; }
+    @keyframes draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) { path { animation: none; } }
+  </style>
+  <path d="M4 20 Q 40 0 76 18 T 148 18 T 220 18 T 296 14" fill="none" stroke="#C6F432" stroke-width="8" stroke-linecap="round"/>
+</svg>

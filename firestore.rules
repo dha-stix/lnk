@@ -1,0 +1,81 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function usernamePath(name) { return /databases/$(database)/documents/usernames/$(name); }
+    function validName(name) { return name is string && name.matches('^[a-z0-9._]{3,20}$'); }
+
+    // Photos may only come from our Storage bucket or Google's sign-in photo hosts.
+    function validPhoto(url, pattern) { return url == null || (url is string && url.size() < 2000 && url.matches(pattern)); }
+
+    // Only known fields, with sensible sizes, so nobody can stuff extra data into a profile.
+    function validProfile(d, uid) {
+      return d.keys().hasOnly(['uid', 'username', 'displayName', 'bio', 'photoURL', 'googlePhotoURL',
+                               'socials', 'websites', 'appearance', 'settings', 'createdAt', 'updatedAt'])
+        && d.uid == uid
+        && validName(d.username)
+        && d.displayName is string && d.displayName.size() <= 50
+        && d.bio is string && d.bio.size() <= 160
+        && d.socials is list && d.socials.size() <= 60
+        && d.websites is list && d.websites.size() <= 5
+        && d.appearance is map && d.settings is map
+        && validPhoto(d.photoURL, '^https://(firebasestorage[.]googleapis[.]com|[a-z0-9-]+[.]firebasestorage[.]app)/.*')
+        && validPhoto(d.googlePhotoURL, '^https://lh[0-9][.]googleusercontent[.]com/.*');
+    }
+
+    // Public profile data. No email or private fields are stored here.
+    match /users/{uid} {
+      allow read: if true;
+
+      allow create: if isOwner(uid)
+        && validProfile(request.resource.data, uid)
+        && getAfter(usernamePath(request.resource.data.username)).data.uid == uid;
+
+      // Changing username must claim the new name and release the old one in the same write.
+      allow update: if isOwner(uid)
+        && validProfile(request.resource.data, uid)
+        && (request.resource.data.username == resource.data.username
+            || (getAfter(usernamePath(request.resource.data.username)).data.uid == uid
+                && !existsAfter(usernamePath(resource.data.username))));
+
+      allow delete: if isOwner(uid);
+    }
+
+    // One document per claimed username, used to guarantee uniqueness. A claim must be
+    // the username on the claimer's own profile, so each account holds exactly one.
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if signedIn()
+        && validName(username)
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.username == username;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Running totals. The view count is public; any visitor except the owner may add exactly one.
+    match /stats/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid) && request.resource.data.views == 0 && request.resource.data.clicks == 0;
+      allow update: if !isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'clicks'])
+        && request.resource.data.views >= resource.data.views
+        && request.resource.data.views <= resource.data.views + 1
+        && request.resource.data.clicks >= resource.data.clicks
+        && request.resource.data.clicks <= resource.data.clicks + 1;
+      allow delete: if isOwner(uid);
+
+      // Daily breakdowns are private to the owner but written by visitors (never the owner).
+      match /days/{day} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if !isOwner(uid)
+          && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && request.resource.data.date == day
+          && request.resource.data.keys().hasOnly(
+               ['date', 'views', 'uniques', 'clicks', 'links', 'referrers', 'devices', 'countries']);
+      }
+    }
+  }
+}

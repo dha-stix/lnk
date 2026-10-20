@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    .eye { transform-box: fill-box; transform-origin: center; animation: blink 4s infinite; }
+    .mouth { stroke-dasharray: 60; animation: smile 4s ease-in-out infinite; }
+    @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+    @keyframes smile { 0%, 100% { stroke-dashoffset: 0; } 50% { stroke-dashoffset: 6; } }
+    @media (prefers-reduced-motion: reduce) { .eye, .mouth { animation: none; } }
+  </style>
+  <circle cx="50" cy="50" r="44" fill="#C6F432" stroke="#121212" stroke-width="5"/>
+  <ellipse class="eye" cx="36" cy="42" rx="5" ry="8" fill="#121212"/>
+  <ellipse class="eye" cx="64" cy="42" rx="5" ry="8" fill="#121212"/>
+  <path class="mouth" d="M30 60 Q50 80 70 60" fill="none" stroke="#121212" stroke-width="5" stroke-linecap="round"/>
+</svg>

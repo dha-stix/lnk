@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <style>
+    .body { stroke-dasharray: 400; animation: draw 2.4s ease-in-out infinite alternate; }
+    .spark { transform-origin: 62px 18px; animation: spin 4s linear infinite; }
+    @keyframes draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .body, .spark { animation: none; } }
+  </style>
+  <circle cx="40" cy="28" r="14" fill="#C6F432" stroke="#121212" stroke-width="4"/>
+  <path class="body" d="M14 72 Q14 48 40 48 Q66 48 66 72" fill="none" stroke="#121212" stroke-width="4" stroke-linecap="round"/>
+  <path class="spark" d="M62 8 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#5B3DF5"/>
+</svg>

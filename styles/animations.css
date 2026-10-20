@@ -1,0 +1,98 @@
+/* Shared motion for Lnk. Every animation respects prefers-reduced-motion. */
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes widen { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgb(61 122 0 / 0.55); }
+  100% { box-shadow: 0 0 0 12px rgb(61 122 0 / 0); }
+}
+@keyframes jelly {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.08, 0.92); }
+  60% { transform: scale(0.95, 1.05); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(60%) rotate(4deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-floaty { animation: floaty 5s ease-in-out infinite; }
+.animate-wiggle { animation: wiggle 2.4s ease-in-out infinite; }
+.animate-spin-slow { animation: spin 9s linear infinite; }
+.animate-pulse-ring { animation: pulse-ring 1.6s infinite; }
+.animate-pop { animation: pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-word { display: inline-block; animation: word-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-draw { stroke-dasharray: 400; animation: draw 1.4s ease-out both; }
+.animate-grow { transform-origin: bottom; animation: grow 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-widen { transform-origin: left; animation: widen 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-shake { animation: shake 0.3s; }
+
+/* Neo-brutal hover lift used on cards and primary buttons. */
+.lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+.lift:hover { transform: translate(-2px, -4px); box-shadow: 5px 7px 0 var(--lift-shadow, #121212); }
+.lift:active { transform: translate(0, 0); box-shadow: 1px 1px 0 var(--lift-shadow, #121212); }
+
+.jelly:hover { animation: jelly 0.55s; }
+
+/* Children pop in one after another. */
+.stagger > * { animation: pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.24s; }
+.stagger > *:nth-child(5) { animation-delay: 0.32s; }
+.stagger > *:nth-child(6) { animation-delay: 0.4s; }
+.stagger > *:nth-child(7) { animation-delay: 0.48s; }
+.stagger > *:nth-child(n + 8) { animation-delay: 0.56s; }
+
+/* Scroll reveal, toggled by <Reveal>. */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Platform orbit: rings spin, tiles counter-spin to stay upright. */
+.orbit-ring { animation: spin var(--dur, 40s) linear infinite var(--dir, normal); }
+.orbit-tile { animation: spin var(--dur, 40s) linear infinite var(--counter, reverse); }
+.orbit:hover .orbit-ring,
+.orbit:hover .orbit-tile { animation-play-state: paused; }
+.orbit-slot { transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.orbit-slot:hover { transform: scale(1.18); }
+
+.skeleton {
+  background: linear-gradient(90deg, #ecece6 25%, #f6f6f1 37%, #ecece6 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
