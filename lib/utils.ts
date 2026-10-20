@@ -10,11 +10,12 @@ export function createId() {
     : Math.random().toString(36).slice(2, 14);
 }
 
-const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
+// 3 significant digits: 1K, 1.05K, 10K, 12.5K, 125K, 1.25M. Truncated, so a count is never overstated.
+const compact = new Intl.NumberFormat("en", { notation: "compact", maximumSignificantDigits: 3, roundingMode: "trunc" });
 const full = new Intl.NumberFormat("en");
 
 export const formatNumber = (n: number) => full.format(Math.round(n));
-export const formatCompact = (n: number) => (n < 10_000 ? formatNumber(n) : compact.format(n));
+export const formatCompact = (n: number) => (n < 1000 ? formatNumber(n) : compact.format(Math.floor(n)));
 
 export function formatPercent(value: number, digits = 1) {
   if (!Number.isFinite(value)) return "0%";
